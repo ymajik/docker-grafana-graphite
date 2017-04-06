@@ -2,8 +2,8 @@ version: '2'
 services:
   grafana_graphite:
     build: .
-    image: kamon/grafana_graphite
-    container_name: kamon-grafana-dashboard
+    image: ymajik/grafana_graphite
+    container_name: ymajik-grafana-dashboard
     ports:
       - '80:80'
       - '81:81'
@@ -14,3 +14,4 @@ services:
       - ./data/whisper:/opt/graphite/storage/whisper
       - ./data/grafana:/opt/grafana/data
       - ./log/graphite:/opt/graphite/storage/log
+      - ./graphite:/opt/graphite/conf
