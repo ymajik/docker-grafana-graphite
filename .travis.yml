@@ -1,0 +1,7 @@
+services:
+ - docker
+install:
+  - docker build -t grafana-graphite .
+  - docker run -d -p 127.0.0.1:80:80 -p 127.0.0.1:81:81 -p 127.0.0.1:2003:2003 -p 127.0.0.1:8125:8125/udp -p 127.0.0.1:8126:8126 --name grafana-graphite grafana-graphite
+script:
+  - docker ps | grep -q grafana-graphite
