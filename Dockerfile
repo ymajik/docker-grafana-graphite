@@ -37,12 +37,6 @@ RUN     git clone https://github.com/graphite-project/graphite-web.git /src/grap
         pip install -r requirements.txt                                                   &&\
         python check-dependencies.py
 
-# Install StatsD
-RUN     git clone https://github.com/etsy/statsd.git /src/statsd                                                                        &&\
-        cd /src/statsd                                                                                                                  &&\
-        git checkout v0.7.2
-
-
 # Install Grafana
 RUN     mkdir /src/grafana                                                                                    &&\
         mkdir /opt/grafana                                                                                    &&\
@@ -54,9 +48,6 @@ RUN     mkdir /src/grafana                                                      
 # ----------------- #
 #   Configuration   #
 # ----------------- #
-
-# Confiure StatsD
-ADD     ./statsd/config.js /src/statsd/config.js
 
 # Configure Whisper, Carbon and Graphite-Web
 ADD     ./graphite/initial_data.json /opt/graphite/webapp/graphite/initial_data.json
@@ -93,12 +84,6 @@ ADD     ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Grafana
 EXPOSE  80
-
-# StatsD UDP port
-EXPOSE  8125/udp
-
-# StatsD Management port
-EXPOSE  8126
 
 # Graphite web port
 EXPOSE 81
