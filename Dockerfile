@@ -1,4 +1,4 @@
-FROM     ubuntu:14.04
+FROM debian:stretch-slim
 
 # ---------------- #
 #   Installation   #
@@ -9,14 +9,12 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install all prerequisites
 RUN     apt-get -y update
 RUN     apt-get -y install software-properties-common
-RUN     add-apt-repository -y ppa:chris-lea/node.js
 RUN     apt-get -y update
 RUN     apt-get -y install python-django-tagging python-simplejson python-memcache python-ldap python-cairo python-pysqlite2 python-support \
-                           python-pip gunicorn supervisor nginx-light nodejs git wget curl openjdk-7-jre build-essential python-dev libffi-dev
+                           python-pip gunicorn supervisor nginx-light git wget curl openjdk-7-jre build-essential python-dev libffi-dev
 
 RUN     pip install Twisted==11.1.0
 RUN     pip install pytz
-RUN     npm install ini chokidar
 
 # Checkout the stable branches of Graphite, Carbon and Whisper and install from there
 RUN     mkdir /src
@@ -87,7 +85,6 @@ EXPOSE  80
 
 # Graphite web port
 EXPOSE 81
-
 
 
 # -------- #
