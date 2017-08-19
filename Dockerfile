@@ -1,18 +1,20 @@
-FROM     ubuntu:14.04
+FROM  debian:stretch
 
 # ---------------- #
 #   Installation   #
 # ---------------- #
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV GRAFANA_VERSION=4.4.3
 
 # Install all prerequisites
 RUN     apt-get -y update
-RUN     apt-get -y install software-properties-common
-RUN     add-apt-repository -y ppa:chris-lea/node.js
+RUN     apt-get -y install software-properties-common curl gnupg
+RUN     curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN     apt-get -y update
-RUN     apt-get -y install python-django-tagging python-simplejson python-memcache python-ldap python-cairo python-pysqlite2 python-support \
-                           python-pip gunicorn supervisor nginx-light nodejs git wget curl openjdk-7-jre build-essential python-dev libffi-dev
+RUN     apt-get -y install python-django-taggit python-simplejson python-memcache python-ldap python-cairo python-pysqlite2 \
+                           python-pip gunicorn supervisor nginx-light nodejs git wget curl openjdk-8-jre build-essential python-dev libffi-dev
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN     pip install Twisted==11.1.0
 RUN     pip install pytz
@@ -40,7 +42,7 @@ RUN     git clone https://github.com/graphite-project/graphite-web.git /src/grap
 # Install Grafana
 RUN     mkdir /src/grafana                                                                                    &&\
         mkdir /opt/grafana                                                                                    &&\
-        wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.4.1.linux-x64.tar.gz -O /src/grafana.tar.gz &&\
+        wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-${GRAFANA_VERSION}.linux-x64.tar.gz -O /src/grafana.tar.gz &&\
         tar -xzf /src/grafana.tar.gz -C /opt/grafana --strip-components=1                                     &&\
         rm /src/grafana.tar.gz
 
@@ -95,4 +97,3 @@ EXPOSE 81
 # -------- #
 
 CMD     ["/usr/bin/supervisord"]
-

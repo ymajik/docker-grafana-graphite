@@ -1,9 +1,7 @@
-version: '2'
+version: '2.1'
 services:
   grafana_graphite:
-    build: .
-    image: ymajik/grafana_graphite
-    container_name: ymajik-grafana-dashboard
+    image: ymajik/docker-grafana-graphite:develop
     ports:
       - '80:80'
       - '81:81'
