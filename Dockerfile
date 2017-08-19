@@ -5,6 +5,9 @@ FROM     ubuntu:14.04
 # ---------------- #
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV GRAFANA_VERSION=4.4.3
+ENV CARBON_VERSION=1.0.2
+ENV WHISPER_VERSION=1.0.2
 
 # Install all prerequisites
 RUN     apt-get -y update
@@ -22,12 +25,12 @@ RUN     npm install ini chokidar
 RUN     mkdir /src
 RUN     git clone https://github.com/graphite-project/whisper.git /src/whisper            &&\
         cd /src/whisper                                                                   &&\
-        git checkout 1.0.2                                                                &&\
+        git checkout ${WHISPER_VERSION}                                                   &&\
         python setup.py install
 
 RUN     git clone https://github.com/graphite-project/carbon.git /src/carbon              &&\
         cd /src/carbon                                                                    &&\
-        git checkout 1.0.2                                                                &&\
+        git checkout ${CARBON_VERSION}
         python setup.py install
 
 
@@ -40,7 +43,7 @@ RUN     git clone https://github.com/graphite-project/graphite-web.git /src/grap
 # Install Grafana
 RUN     mkdir /src/grafana                                                                                    &&\
         mkdir /opt/grafana                                                                                    &&\
-        wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.4.1.linux-x64.tar.gz -O /src/grafana.tar.gz &&\
+        wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-${GRAFANA_VERSION}.linux-x64.tar.gz -O /src/grafana.tar.gz &&\
         tar -xzf /src/grafana.tar.gz -C /opt/grafana --strip-components=1                                     &&\
         rm /src/grafana.tar.gz
 
