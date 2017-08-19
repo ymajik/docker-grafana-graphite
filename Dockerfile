@@ -1,4 +1,4 @@
-FROM     ubuntu:14.04
+FROM  ubuntu:14.04
 
 # ---------------- #
 #   Installation   #
@@ -30,7 +30,7 @@ RUN     git clone https://github.com/graphite-project/whisper.git /src/whisper  
 
 RUN     git clone https://github.com/graphite-project/carbon.git /src/carbon              &&\
         cd /src/carbon                                                                    &&\
-        git checkout ${CARBON_VERSION}
+        git checkout ${CARBON_VERSION}                                                    &&\
         python setup.py install
 
 
