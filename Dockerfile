@@ -15,7 +15,8 @@ RUN     apt-get -y install software-properties-common curl gnupg
 RUN     curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN     apt-get -y update
 RUN     apt-get -y install python-django-taggit python-simplejson python-memcache python-ldap python-cairo python-pysqlite2 \
-                           python-pip gunicorn supervisor nginx-light nodejs git wget curl openjdk-8-jre build-essential python-dev libffi-dev
+                           python-pip gunicorn supervisor nginx-light nodejs git wget curl openjdk-8-jre build-essential python-dev libffi-dev \
+			   openjdk-8-jre-headless ca-certificates-java
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN     pip install Twisted==11.1.0
