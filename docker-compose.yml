@@ -1,7 +1,7 @@
 version: '2.1'
 services:
   grafana_graphite:
-    image: ymajik/docker-grafana-graphite:nostatsd
+    image: ymajik/docker-grafana-graphite:no-statsd
     ports:
       - '80:80'
       - '81:81'
