@@ -6,6 +6,8 @@ FROM  debian:stretch
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV GRAFANA_VERSION=4.4.3
+ENV CARBON_VERSION=1.0.2
+ENV WHISPER_VERSION=1.0.2
 
 # Install all prerequisites
 RUN     apt-get -y update
@@ -24,12 +26,12 @@ RUN     npm install ini chokidar
 RUN     mkdir /src
 RUN     git clone https://github.com/graphite-project/whisper.git /src/whisper            &&\
         cd /src/whisper                                                                   &&\
-        git checkout 1.0.2                                                                &&\
+        git checkout ${WHISPER_VERSION}                                                   &&\
         python setup.py install
 
 RUN     git clone https://github.com/graphite-project/carbon.git /src/carbon              &&\
         cd /src/carbon                                                                    &&\
-        git checkout 1.0.2                                                                &&\
+        git checkout ${CARBON_VERSION}                                                    &&\
         python setup.py install
 
 
