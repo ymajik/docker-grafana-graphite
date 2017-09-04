@@ -1,3 +1,9 @@
+import string
+import random
+
+def id_generator(size=32, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
 # Edit this file to override the default graphite settings, do not edit settings.py
 
 # Turn on debugging and restart apache if you ever see an "Internal Server Error" page
@@ -40,3 +46,5 @@ TIME_ZONE = 'UTC'
 #DATABASE_PASSWORD = 'graphite-is-awesome'
 #DATABASE_HOST = 'mysql.mycompany.com'
 #DATABASE_PORT = '3306'
+
+SECRET_KEY = 'id_generator()'
