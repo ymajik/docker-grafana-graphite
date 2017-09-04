@@ -9,7 +9,8 @@ ENV DEBIAN_FRONTEND noninteractive \
 	CARBON_VERSION=1.0.2 \
 	WHISPER_VERSION=1.0.2
 
-RUN adduser -S www-data
+RUN addgroup -S www &&\
+		adduser -S -g 'www' www
 		#addgroup -S grafana \
 
 # Install all prerequisites
@@ -82,7 +83,7 @@ COPY     ./graphite/storage-schemas.conf /opt/graphite/conf/storage-schemas.conf
 COPY     ./graphite/storage-aggregation.conf /opt/graphite/conf/storage-aggregation.conf
 RUN     mkdir -p /opt/graphite/storage/whisper
 RUN     touch /opt/graphite/storage/graphite.db /opt/graphite/storage/index
-RUN     chown -R www-data /opt/graphite/storage
+RUN     chown -R www /opt/graphite/storage
 RUN     chmod 0775 /opt/graphite/storage /opt/graphite/storage/whisper
 RUN     chmod 0664 /opt/graphite/storage/graphite.db
 RUN     cp /src/graphite-web/webapp/manage.py /opt/graphite/webapp
