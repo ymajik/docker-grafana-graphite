@@ -1,80 +1,65 @@
-FROM  alpine:3.6
+FROM  alpine:3.7
 
 # ---------------- #
 #   Installation   #
 # ---------------- #
 
 ENV DEBIAN_FRONTEND noninteractive \
-	GRAFANA_VERSION=4.4.3 \
-	CARBON_VERSION=1.0.2 \
-	GRAPHITE_WEB_VERSION=1.0.2 \
-	WHISPER_VERSION=1.0.2
+	GRAFANA_VERSION=5.0.4 \
+	CARBON_VERSION=1.1.3 \
+	GRAPHITE_WEB_VERSION=1.1.3 \
+	WHISPER_VERSION=1.1.3
 
-RUN addgroup -S www &&\
-		adduser -S -g 'www' www
-		#addgroup -S grafana \
+	FROM   alpine
 
-# Install all prerequisites
-RUN apk add --update-cache --no-cache  \
-	bash \
-	ca-certificates        \
-	git \
-	gcc \
-	g++ \
-	make \
-	fontconfig \
-	libffi-dev             \
-	nginx \
-	nodejs \
-	nodejs-npm \
-	openssl \
-	python2-dev \
-	py2-cairo               \
-	py2-pip                 \
-	py-twisted             \
-	&& rm -rf /var/cache/apk/*
+	# ---------------- #
+	#   Installation   #
+	# ---------------- #
 
-RUN pip install pip==9.0.1   \
-	&&  pip install              \
-	Twisted==17.5.0              \
-	django==1.11                 \
-	django-tagging==0.4.5        \
-	gunicorn==19.7.1             \
-	pyparsing==2.2.0             \
-	carbon==1.0.2 \
-	whisper==1.0.2 \
-	graphite-web==1.0.2 \
-	supervisor==3.3.3 \
-	pytz==2017.2
+	# Install all prerequisites
+	RUN     apk add --update --no-cache nginx nodejs nodejs-npm git curl wget gcc ca-certificates \
+	                                    python-dev py-pip musl-dev libffi-dev cairo supervisor bash \
+	                                    py-pyldap py-rrd                                                                 &&\
+	        wget -q -O /etc/apk/keys/sgerrand.rsa.pub \
+	                    https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub              &&\
+	        wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.26-r0/glibc-2.26-r0.apk                &&\
+	        apk add --no-cache  glibc-2.26-r0.apk                                                                        &&\
+	        rm glibc-2.26-r0.apk                                                                                         &&\
+	        adduser -D -u 1000 -g 'www' www                                                                              &&\
+	        pip install -U pip pytz gunicorn six --no-cache-dir                                                          &&\
+	        npm install -g wizzy                                                                                         &&\
+	        npm cache clean --force
+
+	# Checkout the master branches of Graphite, Carbon and Whisper and install from there
+	RUN     mkdir /src                                                                                                   &&\
+	        git clone --depth=1 --branch master https://github.com/graphite-project/whisper.git /src/whisper             &&\
+	        cd /src/whisper                                                                                              &&\
+	        git checkout ${WHISPER_VERSION} &&\
+	        python setup.py install
+
+	RUN     git clone --depth=1 --branch master https://github.com/graphite-project/carbon.git /src/carbon               &&\
+	        cd /src/carbon                                                                                               &&\
+	        git checkout ${CARBON_VERSION} &&\
+	        python setup.py install
+
+	RUN     git clone --depth=1 --branch master https://github.com/graphite-project/graphite-web.git /src/graphite-web   &&\
+	        cd /src/graphite-web                                                                                         &&\
+	        git checkout ${GRAPHITE_WEB_VERSION} &&\
+	        python setup.py install                                                                                      &&\
+	        pip install -r requirements.txt --no-cache-dir                                                               &&\
+	        python check-dependencies.py
+
+	# Install Grafana
+	RUN     mkdir /src/grafana                                                                                           &&\
+	        mkdir /opt/grafana                                                                                           &&\
+	        curl https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-"${GRAFANA_VERSION}".linux-x64.tar.gz  -o /src/grafana.tar.gz &&\  &&\
+					#curl https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-5.0.4.linux-x64.tar.gz -o /src/grafana.tar.gz &&\
+	        tar -xzf /src/grafana.tar.gz -C /opt/grafana --strip-components=1                                            &&\
+	        rm /src/grafana.tar.gz
 
 
-RUN     npm install ini chokidar
-
-# # Checkout the stable branches of Graphite, Carbon and Whisper and install from there
-# RUN     mkdir /src
-# RUN     git clone https://github.com/graphite-project/whisper.git /src/whisper            &&\
-# 	cd /src/whisper                                                                   &&\
-# 	git checkout "${WHISPER_VERSION}"                                                   &&\
-# 	python2 setup.py install
-#
-# RUN     git clone https://github.com/graphite-project/carbon.git /src/carbon              &&\
-# 	cd /src/carbon                                                                    &&\
-# 	git checkout "${CARBON_VERSION}"                                                    &&\
-# 	python2 setup.py install
-#
-# RUN     git clone https://github.com/graphite-project/graphite-web.git /src/graphite-web  &&\
-# 	cd /src/graphite-web                                                              &&\
-# 	python2 setup.py install                                                           &&\
-# 	pip install -r requirements.txt                                                   &&\
-# 	python2 check-dependencies.py
-
-# Install Grafana
-RUN mkdir -p /src/grafana                                                                                    &&\
-	  mkdir -p /opt/grafana                                                                                    &&\
-	#wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-"${GRAFANA_VERSION}".linux-x64.tar.gz -O /src/grafana.tar.gz &&\
-	wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.4.3.linux-x64.tar.gz -O /src/grafana.tar.gz &&\
-	tar -xzf /src/grafana.tar.gz -C /opt/grafana --strip-components=1                                     &&\
-	rm /src/grafana.tar.gz
+	# Cleanup Compile Dependencies
+	RUN     apk del --no-cache git curl wget gcc python-dev musl-dev libffi-dev
 
 # ----------------- #
 #   Configuration   #
@@ -86,28 +71,35 @@ COPY     ./graphite/local_settings.py /opt/graphite/webapp/graphite/local_settin
 COPY     ./graphite/carbon.conf /opt/graphite/conf/carbon.conf
 COPY     ./graphite/storage-schemas.conf /opt/graphite/conf/storage-schemas.conf
 COPY     ./graphite/storage-aggregation.conf /opt/graphite/conf/storage-aggregation.conf
-RUN     mkdir -p /opt/graphite/storage/whisper
-RUN     touch /opt/graphite/storage/graphite.db /opt/graphite/storage/index
-RUN     chown -R www /opt/graphite/storage
-RUN     chmod 0775 /opt/graphite/storage /opt/graphite/storage/whisper
-RUN     chmod 0664 /opt/graphite/storage/graphite.db
-#RUN     cp /src/graphite-web/webapp/manage.py /opt/graphite/webapp
-#RUN     cd /opt/graphite/webapp/ && python manage.py migrate --run-syncdb --noinput
+RUN     mkdir -p /opt/graphite/storage/whisper                                                                       &&\
+        mkdir -p /opt/graphite/storage/log/webapp                                                                    &&\
+        touch /opt/graphite/storage/graphite.db /opt/graphite/storage/index                                          &&\
+        chown -R www /opt/graphite/storage                                                                           &&\
+        chmod 0775 /opt/graphite/storage /opt/graphite/storage/whisper                                               &&\
+        chmod 0664 /opt/graphite/storage/graphite.db                                                                 &&\
+        cp /src/graphite-web/webapp/manage.py /opt/graphite/webapp                                                   &&\
+        cd /opt/graphite/webapp/ && python manage.py migrate --run-syncdb --noinput
 
-# Configure Grafana
+# Configure Grafana and wizzy
 COPY     ./grafana/custom.ini /opt/grafana/conf/custom.ini
+RUN     cd /src                                                                                                      &&\
+        wizzy init                                                                                                   &&\
+        extract() { cat /opt/grafana/conf/custom.ini | grep $1 | awk '{print $NF}'; }                                &&\
+        wizzy set grafana url $(extract ";protocol")://$(extract ";domain"):$(extract ";http_port")                  &&\
+        wizzy set grafana username $(extract ";admin_user")                                                          &&\
+        wizzy set grafana password $(extract ";admin_password")
 
-# COPY the default dashboards
-RUN     mkdir /src/dashboards
+# COPY the default datasource and dashboards
+RUN 	mkdir /src/datasources                                                                                       &&\
+        mkdir /src/dashboards
+COPY     ./grafana/datasources/* /src/datasources
 COPY     ./grafana/dashboards/* /src/dashboards/
-COPY     ./grafana/set-local-graphite-source.sh /src/
-RUN     mkdir /src/dashboard-loader
-COPY     ./grafana/dashboard-loader/dashboard-loader.js /src/dashboard-loader/
+COPY     ./grafana/export-datasources-and-dashboards.sh /src/
 
 # Configure nginx and supervisord
 COPY     ./nginx/nginx.conf /etc/nginx/nginx.conf
-COPY     ./supervisord.conf /etc/supervisord.conf
-RUN mkdir -p /var/log/supervisor
+RUN     mkdir /var/log/supervisor
+COPY     ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 
 # ---------------- #
@@ -126,4 +118,5 @@ EXPOSE 81
 #   Run!   #
 # -------- #
 
-CMD ["/usr/bin/supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
+
+CMD ["/usr/bin/supervisord", "--nodaemon", "--configuration", "/etc/supervisor/conf.d/supervisord.conf"]
