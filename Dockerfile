@@ -5,7 +5,7 @@ FROM  alpine:3.7
 # ---------------- #
 
 ENV DEBIAN_FRONTEND noninteractive \
-	GRAFANA_VERSION=5.0.4 \
+   	GRAFANA_VERSION=5.0.4 \
 	CARBON_VERSION=1.1.3 \
 	GRAPHITE_WEB_VERSION=1.1.3 \
 	WHISPER_VERSION=1.1.3
@@ -52,8 +52,8 @@ ENV DEBIAN_FRONTEND noninteractive \
 	# Install Grafana
 	RUN     mkdir /src/grafana                                                                                           &&\
 	        mkdir /opt/grafana                                                                                           &&\
-	        curl https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-"${GRAFANA_VERSION}".linux-x64.tar.gz  -o /src/grafana.tar.gz &&\  &&\
-					#curl https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-5.0.4.linux-x64.tar.gz -o /src/grafana.tar.gz &&\
+	        #wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-${GRAFANA_VERSION}.linux-x64.tar.gz  -O /src/grafana.tar.gz &&\  &&\
+					curl https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-5.0.4.linux-x64.tar.gz -o /src/grafana.tar.gz &&\
 	        tar -xzf /src/grafana.tar.gz -C /opt/grafana --strip-components=1                                            &&\
 	        rm /src/grafana.tar.gz
 
