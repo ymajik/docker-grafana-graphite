@@ -1,4 +1,4 @@
-version: '2'
+version: '3.1'
 services:
   grafana_graphite:
     build: .
@@ -15,3 +15,4 @@ services:
       - ./data/grafana:/opt/grafana/data
       - ./log/graphite:/opt/graphite/storage/log
       - ./graphite:/opt/graphite/conf
+      - ./log/supervisor:/var/log/supervisor
