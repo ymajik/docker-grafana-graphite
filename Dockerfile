@@ -112,6 +112,9 @@ EXPOSE  80
 # Graphite web port
 EXPOSE 81
 
+# Graphite Carbon port
+EXPOSE 2003
+
 
 
 # -------- #
